@@ -1,19 +1,14 @@
 import random
+from pathlib import Path
 import tkinter as tk
 
 
 BG_COLOR = "#9ED9A3"
-CROC_GREEN = "#3A9B57"
-CROC_GREEN_DARK = "#27723E"
-CROC_GREEN_LIGHT = "#63BE76"
-MOUTH_RED = "#CF4C4C"
-MOUTH_DARK = "#9E2E2E"
-TOOTH_COLOR = "#FFF8EA"
-TOOTH_SHADOW = "#D7D0C4"
-TOOTH_PRESSED = "#CFC8BD"
-DANGER_COLOR = "#D94B4B"
 TEXT_COLOR = "#16301B"
 SKY_ACCENT = "#CDEED1"
+TOOTH_GLOW = "#FFF0D2"
+TOOTH_PRESSED = "#B9B1A6"
+DANGER_COLOR = "#D94B4B"
 
 
 class CrocodileDentistGame:
@@ -23,14 +18,14 @@ class CrocodileDentistGame:
         self.root.resizable(False, False)
         self.root.configure(bg=BG_COLOR)
 
-        self.canvas_width = 860
-        self.canvas_height = 500
-        self.total_teeth = 10
-        self.top_tooth_ids: list[int] = []
-        self.bottom_tooth_ids: list[int] = []
-        self.tooth_hit_areas: dict[int, int] = {}
-        self.pressed_teeth: set[int] = set()
+        self.image_path = Path(__file__).with_name("Crocodile-Dentist.png")
+        self.croc_image = self._load_game_image()
+        self.canvas_width = self.croc_image.width() + 80
+        self.canvas_height = self.croc_image.height() + 110
 
+        self.total_teeth = 10
+        self.tooth_shapes: dict[int, tuple[int, int]] = {}
+        self.pressed_teeth: set[int] = set()
         self.safe_presses = 0
         self.game_over = False
         self.losing_tooth = 0
@@ -40,6 +35,22 @@ class CrocodileDentistGame:
 
         self._build_ui()
         self.reset_game()
+
+    def _load_game_image(self) -> tk.PhotoImage:
+        image = tk.PhotoImage(file=str(self.image_path))
+
+        max_width = 900
+        max_height = 520
+        scale = max(
+            1,
+            (image.width() + max_width - 1) // max_width,
+            (image.height() + max_height - 1) // max_height,
+        )
+
+        if scale > 1:
+            image = image.subsample(scale, scale)
+
+        return image
 
     def _build_ui(self) -> None:
         title = tk.Label(
@@ -81,8 +92,6 @@ class CrocodileDentistGame:
         )
         self.canvas.pack(padx=14, pady=(4, 10))
 
-        self._draw_scene()
-
         controls = tk.Frame(self.root, bg=BG_COLOR)
         controls.pack(pady=(0, 16))
 
@@ -90,9 +99,9 @@ class CrocodileDentistGame:
             controls,
             text="New Game",
             font=("Segoe UI", 11, "bold"),
-            bg=CROC_GREEN_DARK,
+            bg="#27723E",
             fg="white",
-            activebackground=CROC_GREEN,
+            activebackground="#3A9B57",
             activeforeground="white",
             padx=18,
             pady=8,
@@ -102,118 +111,35 @@ class CrocodileDentistGame:
 
     def _draw_scene(self) -> None:
         self.canvas.delete("all")
+        self.tooth_shapes.clear()
 
-        self.canvas.create_rectangle(
-            0, 350, self.canvas_width, self.canvas_height, fill="#8ACF8B", outline=""
-        )
-        self.canvas.create_oval(20, 355, 280, 510, fill="#78C77E", outline="")
-        self.canvas.create_oval(540, 360, 840, 530, fill="#78C77E", outline="")
-
-        self.canvas.create_polygon(
-            120,
-            185,
-            640,
-            130,
-            760,
-            170,
-            720,
-            205,
-            635,
-            222,
-            220,
-            248,
-            fill=CROC_GREEN,
-            outline=CROC_GREEN_DARK,
-            width=4,
-        )
-        self.canvas.create_polygon(
-            155,
-            255,
-            635,
-            278,
-            730,
-            320,
-            690,
-            358,
-            610,
-            360,
-            200,
-            320,
-            fill=CROC_GREEN_LIGHT,
-            outline=CROC_GREEN_DARK,
-            width=4,
-        )
-
-        self.canvas.create_polygon(
-            200,
-            240,
-            635,
-            220,
-            710,
-            245,
-            625,
-            282,
-            220,
-            295,
-            160,
-            270,
-            fill=MOUTH_RED,
-            outline=MOUTH_DARK,
-            width=3,
-        )
-        self.canvas.create_polygon(
-            228,
-            250,
-            622,
-            235,
-            672,
-            248,
-            615,
-            270,
-            240,
-            279,
-            196,
-            264,
-            fill="#F27B7B",
-            outline="",
-        )
-
-        self.canvas.create_oval(
-            170, 162, 262, 230, fill="white", outline=CROC_GREEN_DARK, width=3
-        )
-        self.canvas.create_oval(206, 186, 228, 208, fill="black", outline="black")
-        self.canvas.create_oval(212, 191, 218, 197, fill="white", outline="")
-
-        self.canvas.create_oval(
-            660, 200, 676, 216, fill=CROC_GREEN_DARK, outline=CROC_GREEN_DARK
-        )
-        self.canvas.create_oval(
-            690, 212, 706, 228, fill=CROC_GREEN_DARK, outline=CROC_GREEN_DARK
-        )
+        center_x = self.canvas_width // 2
+        image_y = 24
 
         self.canvas.create_text(
-            430,
-            94,
-            text="Click the crocodile's teeth",
+            center_x,
+            22,
+            text="Click the teeth on the crocodile",
             fill=TEXT_COLOR,
             font=("Segoe UI", 16, "bold"),
         )
 
-        self._draw_teeth()
+        self.canvas.create_image(center_x, image_y, image=self.croc_image, anchor="n")
+        self._draw_teeth_hit_areas(center_x, image_y)
 
-    def _draw_teeth(self) -> None:
-        self.top_tooth_ids.clear()
-        self.bottom_tooth_ids.clear()
-        self.tooth_hit_areas.clear()
+    def _draw_teeth_hit_areas(self, center_x: int, image_y: int) -> None:
+        image_left = center_x - (self.croc_image.width() // 2)
+        image_top = image_y
 
-        left = 250
-        top_y = 224
-        bottom_y = 286
-        tooth_width = 33
-        tooth_gap = 5
+        start_x = image_left + int(self.croc_image.width() * 0.27)
+        top_y = image_top + int(self.croc_image.height() * 0.50)
+        bottom_y = image_top + int(self.croc_image.height() * 0.69)
+        tooth_width = max(18, int(self.croc_image.width() * 0.04))
+        tooth_gap = max(4, int(self.croc_image.width() * 0.008))
+        tooth_height = max(24, int(self.croc_image.height() * 0.09))
 
         for index in range(self.total_teeth):
-            x1 = left + index * (tooth_width + tooth_gap)
+            x1 = start_x + index * (tooth_width + tooth_gap)
             x2 = x1 + tooth_width
 
             top_tooth = self.canvas.create_polygon(
@@ -222,12 +148,11 @@ class CrocodileDentistGame:
                 x2,
                 top_y,
                 x2 - 5,
-                top_y + 32,
+                top_y + tooth_height,
                 x1 + 5,
-                top_y + 32,
-                fill=TOOTH_COLOR,
-                outline=TOOTH_SHADOW,
-                width=2,
+                top_y + tooth_height,
+                outline="",
+                fill="",
                 tags=(f"tooth_{index}", "clickable_tooth"),
             )
             bottom_tooth = self.canvas.create_polygon(
@@ -236,33 +161,31 @@ class CrocodileDentistGame:
                 x2,
                 bottom_y,
                 x2 - 5,
-                bottom_y - 30,
+                bottom_y - tooth_height,
                 x1 + 5,
-                bottom_y - 30,
-                fill=TOOTH_COLOR,
-                outline=TOOTH_SHADOW,
-                width=2,
-                tags=(f"tooth_{index}", "clickable_tooth"),
-            )
-
-            hit_area = self.canvas.create_rectangle(
-                x1 - 2,
-                top_y - 2,
-                x2 + 2,
-                bottom_y + 2,
+                bottom_y - tooth_height,
                 outline="",
                 fill="",
                 tags=(f"tooth_{index}", "clickable_tooth"),
             )
 
-            self.top_tooth_ids.append(top_tooth)
-            self.bottom_tooth_ids.append(bottom_tooth)
-            self.tooth_hit_areas[index] = hit_area
+            self.tooth_shapes[index] = (top_tooth, bottom_tooth)
 
-            for tag in (f"tooth_{index}",):
-                self.canvas.tag_bind(tag, "<Button-1>", lambda _event, idx=index: self.press_tooth(idx))
-                self.canvas.tag_bind(tag, "<Enter>", lambda _event, idx=index: self._hover_tooth(idx, True))
-                self.canvas.tag_bind(tag, "<Leave>", lambda _event, idx=index: self._hover_tooth(idx, False))
+            self.canvas.tag_bind(
+                f"tooth_{index}",
+                "<Button-1>",
+                lambda _event, idx=index: self.press_tooth(idx),
+            )
+            self.canvas.tag_bind(
+                f"tooth_{index}",
+                "<Enter>",
+                lambda _event, idx=index: self._hover_tooth(idx, True),
+            )
+            self.canvas.tag_bind(
+                f"tooth_{index}",
+                "<Leave>",
+                lambda _event, idx=index: self._hover_tooth(idx, False),
+            )
 
     def reset_game(self) -> None:
         self.safe_presses = 0
@@ -272,25 +195,25 @@ class CrocodileDentistGame:
         self.status_var.set("Press a tooth. One random tooth will snap the jaws shut.")
         self.score_var.set("Safe presses: 0")
         self.status_label.configure(fg=TEXT_COLOR)
-
         self._draw_scene()
 
     def _hover_tooth(self, index: int, entering: bool) -> None:
         if self.game_over or index in self.pressed_teeth:
             return
 
-        fill = "#FFF0D2" if entering else TOOTH_COLOR
-        self.canvas.itemconfigure(self.top_tooth_ids[index], fill=fill)
-        self.canvas.itemconfigure(self.bottom_tooth_ids[index], fill=fill)
+        fill = TOOTH_GLOW if entering else ""
+        for shape_id in self.tooth_shapes[index]:
+            self.canvas.itemconfigure(shape_id, fill=fill, stipple="gray25" if entering else "")
 
     def press_tooth(self, index: int) -> None:
         if self.game_over or index in self.pressed_teeth:
             return
 
         self.pressed_teeth.add(index)
-        self.canvas.itemconfigure(self.top_tooth_ids[index], fill=TOOTH_PRESSED)
-        self.canvas.itemconfigure(self.bottom_tooth_ids[index], fill=TOOTH_PRESSED)
-        self.canvas.move(self.bottom_tooth_ids[index], 0, 10)
+        top_tooth, bottom_tooth = self.tooth_shapes[index]
+        self.canvas.itemconfigure(top_tooth, fill=TOOTH_PRESSED, stipple="gray50")
+        self.canvas.itemconfigure(bottom_tooth, fill=TOOTH_PRESSED, stipple="gray50")
+        self.canvas.move(bottom_tooth, 0, 10)
 
         if index == self.losing_tooth:
             self.end_game(index)
@@ -310,54 +233,51 @@ class CrocodileDentistGame:
         self.status_label.configure(fg=DANGER_COLOR)
         self.score_var.set(f"Final safe presses: {self.safe_presses}")
 
-        self.canvas.itemconfigure(self.top_tooth_ids[losing_index], fill=DANGER_COLOR, outline=MOUTH_DARK)
-        self.canvas.itemconfigure(self.bottom_tooth_ids[losing_index], fill=DANGER_COLOR, outline=MOUTH_DARK)
+        top_tooth, bottom_tooth = self.tooth_shapes[losing_index]
+        self.canvas.itemconfigure(top_tooth, fill=DANGER_COLOR, stipple="gray50")
+        self.canvas.itemconfigure(bottom_tooth, fill=DANGER_COLOR, stipple="gray50")
 
         self._close_jaw_animation(step=0)
 
     def _close_jaw_animation(self, step: int) -> None:
-        top_offsets = [0, 8, 16, 24, 32, 38]
-        bottom_offsets = [0, -6, -12, -18, -24, -28]
+        offsets = [0, 3, 6, 9, 12, 14]
 
         if step == 0:
-            self.closed_top = []
-            self.closed_bottom = []
-            for tooth_id in self.top_tooth_ids:
-                self.closed_top.append(self.canvas.coords(tooth_id))
-            for tooth_id in self.bottom_tooth_ids:
-                self.closed_bottom.append(self.canvas.coords(tooth_id))
+            self.base_coords: dict[int, tuple[list[float], list[float]]] = {}
+            for index, (top_tooth, bottom_tooth) in self.tooth_shapes.items():
+                self.base_coords[index] = (
+                    self.canvas.coords(top_tooth),
+                    self.canvas.coords(bottom_tooth),
+                )
 
-        for index, tooth_id in enumerate(self.top_tooth_ids):
-            coords = self.closed_top[index]
+        offset = offsets[step]
+
+        for index, (top_tooth, bottom_tooth) in self.tooth_shapes.items():
+            top_coords, bottom_coords = self.base_coords[index]
             self.canvas.coords(
-                tooth_id,
-                coords[0],
-                coords[1] + top_offsets[step],
-                coords[2],
-                coords[3] + top_offsets[step],
-                coords[4],
-                coords[5] + top_offsets[step],
-                coords[6],
-                coords[7] + top_offsets[step],
+                top_tooth,
+                top_coords[0],
+                top_coords[1] + offset,
+                top_coords[2],
+                top_coords[3] + offset,
+                top_coords[4],
+                top_coords[5] + offset,
+                top_coords[6],
+                top_coords[7] + offset,
+            )
+            self.canvas.coords(
+                bottom_tooth,
+                bottom_coords[0],
+                bottom_coords[1] - offset,
+                bottom_coords[2],
+                bottom_coords[3] - offset,
+                bottom_coords[4],
+                bottom_coords[5] - offset,
+                bottom_coords[6],
+                bottom_coords[7] - offset,
             )
 
-        for index, tooth_id in enumerate(self.bottom_tooth_ids):
-            coords = self.closed_bottom[index]
-            self.canvas.coords(
-                tooth_id,
-                coords[0],
-                coords[1] + bottom_offsets[step],
-                coords[2],
-                coords[3] + bottom_offsets[step],
-                coords[4],
-                coords[5] + bottom_offsets[step],
-                coords[6],
-                coords[7] + bottom_offsets[step],
-            )
-
-        self.canvas.move("current", 0, 0)
-
-        if step < len(top_offsets) - 1:
+        if step < len(offsets) - 1:
             self.root.after(55, lambda: self._close_jaw_animation(step + 1))
 
 
