@@ -12,6 +12,8 @@ DANGER_COLOR = "#D94B4B"
 
 
 class CrocodileDentistGame:
+    IMAGE_CROP = (115, 51, 416, 346)
+
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("Crocodile Dentist")
@@ -37,22 +39,35 @@ class CrocodileDentistGame:
         self.reset_game()
 
     # Tooth positions are normalized against the source PNG so they still line up
-    # if the image gets subsampled to fit the window.
+    # after the displayed image is cropped and optionally subsampled.
     TOOTH_SPECS = [
-        {"center": (0.296, 0.641), "size": (0.040, 0.082)},
-        {"center": (0.697, 0.641), "size": (0.040, 0.082)},
-        {"center": (0.306, 0.790), "size": (0.036, 0.082)},
-        {"center": (0.371, 0.807), "size": (0.038, 0.088)},
-        {"center": (0.437, 0.820), "size": (0.040, 0.091)},
-        {"center": (0.505, 0.827), "size": (0.041, 0.094)},
-        {"center": (0.572, 0.823), "size": (0.041, 0.091)},
-        {"center": (0.639, 0.810), "size": (0.039, 0.088)},
-        {"center": (0.704, 0.792), "size": (0.036, 0.082)},
-        {"center": (0.760, 0.745), "size": (0.031, 0.071)},
+        {"center": (0.165, 0.670), "size": (0.050, 0.078)},
+        {"center": (0.842, 0.670), "size": (0.050, 0.078)},
+        {"center": (0.187, 0.833), "size": (0.047, 0.080)},
+        {"center": (0.286, 0.865), "size": (0.050, 0.086)},
+        {"center": (0.390, 0.887), "size": (0.053, 0.091)},
+        {"center": (0.502, 0.900), "size": (0.055, 0.095)},
+        {"center": (0.615, 0.889), "size": (0.053, 0.091)},
+        {"center": (0.721, 0.865), "size": (0.050, 0.086)},
+        {"center": (0.812, 0.828), "size": (0.045, 0.078)},
+        {"center": (0.900, 0.768), "size": (0.040, 0.068)},
     ]
 
     def _load_game_image(self) -> tk.PhotoImage:
-        image = tk.PhotoImage(file=str(self.image_path))
+        source_image = tk.PhotoImage(file=str(self.image_path))
+        crop_left, crop_top, crop_right, crop_bottom = self.IMAGE_CROP
+
+        image = tk.PhotoImage()
+        image.tk.call(
+            str(image),
+            "copy",
+            str(source_image),
+            "-from",
+            crop_left,
+            crop_top,
+            crop_right,
+            crop_bottom,
+        )
 
         max_width = 900
         max_height = 520
@@ -129,18 +144,18 @@ class CrocodileDentistGame:
         self.tooth_shapes.clear()
 
         center_x = self.canvas_width // 2
-        image_y = 24
+        image_y = 18
 
         self.canvas.create_text(
             center_x,
-            22,
+            18,
             text="Click the teeth on the crocodile",
             fill=TEXT_COLOR,
             font=("Segoe UI", 16, "bold"),
         )
 
-        self.canvas.create_image(center_x, image_y, image=self.croc_image, anchor="n")
-        self._draw_teeth_hit_areas(center_x, image_y)
+        self.canvas.create_image(center_x, image_y + 18, image=self.croc_image, anchor="n")
+        self._draw_teeth_hit_areas(center_x, image_y + 18)
 
     def _draw_teeth_hit_areas(self, center_x: int, image_y: int) -> None:
         image_left = center_x - (self.croc_image.width() // 2)
@@ -150,7 +165,7 @@ class CrocodileDentistGame:
             center_x_pos = image_left + (self.croc_image.width() * spec["center"][0])
             center_y_pos = image_top + (self.croc_image.height() * spec["center"][1])
             tooth_width = max(14, int(self.croc_image.width() * spec["size"][0]))
-            tooth_height = max(24, int(self.croc_image.height() * spec["size"][1]))
+            tooth_height = max(20, int(self.croc_image.height() * spec["size"][1]))
 
             top_tooth = self.canvas.create_oval(
                 center_x_pos - tooth_width / 2,
