@@ -12,7 +12,7 @@ DANGER_COLOR = "#D94B4B"
 
 
 class CrocodileDentistGame:
-    IMAGE_CROP = (115, 51, 416, 346)
+    IMAGE_CROP = (86, 74, 425, 359)
 
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
@@ -41,16 +41,16 @@ class CrocodileDentistGame:
     # Tooth positions are normalized against the source PNG so they still line up
     # after the displayed image is cropped and optionally subsampled.
     TOOTH_SPECS = [
-        {"center": (0.165, 0.670), "size": (0.050, 0.078)},
-        {"center": (0.842, 0.670), "size": (0.050, 0.078)},
-        {"center": (0.187, 0.833), "size": (0.047, 0.080)},
-        {"center": (0.286, 0.865), "size": (0.050, 0.086)},
-        {"center": (0.390, 0.887), "size": (0.053, 0.091)},
-        {"center": (0.502, 0.900), "size": (0.055, 0.095)},
-        {"center": (0.615, 0.889), "size": (0.053, 0.091)},
-        {"center": (0.721, 0.865), "size": (0.050, 0.086)},
-        {"center": (0.812, 0.828), "size": (0.045, 0.078)},
-        {"center": (0.900, 0.768), "size": (0.040, 0.068)},
+        {"center": (0.245, 0.540), "size": (0.048, 0.090)},
+        {"center": (0.814, 0.540), "size": (0.048, 0.090)},
+        {"center": (0.268, 0.723), "size": (0.044, 0.090)},
+        {"center": (0.342, 0.758), "size": (0.046, 0.094)},
+        {"center": (0.422, 0.779), "size": (0.050, 0.098)},
+        {"center": (0.510, 0.789), "size": (0.052, 0.102)},
+        {"center": (0.599, 0.786), "size": (0.050, 0.098)},
+        {"center": (0.681, 0.775), "size": (0.046, 0.094)},
+        {"center": (0.755, 0.747), "size": (0.044, 0.090)},
+        {"center": (0.808, 0.709), "size": (0.038, 0.082)},
     ]
 
     def _load_game_image(self) -> tk.PhotoImage:
