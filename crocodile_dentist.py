@@ -36,6 +36,21 @@ class CrocodileDentistGame:
         self._build_ui()
         self.reset_game()
 
+    # Tooth positions are normalized against the source PNG so they still line up
+    # if the image gets subsampled to fit the window.
+    TOOTH_SPECS = [
+        {"center": (0.296, 0.641), "size": (0.040, 0.082)},
+        {"center": (0.697, 0.641), "size": (0.040, 0.082)},
+        {"center": (0.306, 0.790), "size": (0.036, 0.082)},
+        {"center": (0.371, 0.807), "size": (0.038, 0.088)},
+        {"center": (0.437, 0.820), "size": (0.040, 0.091)},
+        {"center": (0.505, 0.827), "size": (0.041, 0.094)},
+        {"center": (0.572, 0.823), "size": (0.041, 0.091)},
+        {"center": (0.639, 0.810), "size": (0.039, 0.088)},
+        {"center": (0.704, 0.792), "size": (0.036, 0.082)},
+        {"center": (0.760, 0.745), "size": (0.031, 0.071)},
+    ]
+
     def _load_game_image(self) -> tk.PhotoImage:
         image = tk.PhotoImage(file=str(self.image_path))
 
@@ -131,39 +146,27 @@ class CrocodileDentistGame:
         image_left = center_x - (self.croc_image.width() // 2)
         image_top = image_y
 
-        start_x = image_left + int(self.croc_image.width() * 0.27)
-        top_y = image_top + int(self.croc_image.height() * 0.50)
-        bottom_y = image_top + int(self.croc_image.height() * 0.69)
-        tooth_width = max(18, int(self.croc_image.width() * 0.04))
-        tooth_gap = max(4, int(self.croc_image.width() * 0.008))
-        tooth_height = max(24, int(self.croc_image.height() * 0.09))
+        for index, spec in enumerate(self.TOOTH_SPECS):
+            center_x_pos = image_left + (self.croc_image.width() * spec["center"][0])
+            center_y_pos = image_top + (self.croc_image.height() * spec["center"][1])
+            tooth_width = max(14, int(self.croc_image.width() * spec["size"][0]))
+            tooth_height = max(24, int(self.croc_image.height() * spec["size"][1]))
 
-        for index in range(self.total_teeth):
-            x1 = start_x + index * (tooth_width + tooth_gap)
-            x2 = x1 + tooth_width
-
-            top_tooth = self.canvas.create_polygon(
-                x1,
-                top_y,
-                x2,
-                top_y,
-                x2 - 5,
-                top_y + tooth_height,
-                x1 + 5,
-                top_y + tooth_height,
-                outline="",
+            top_tooth = self.canvas.create_oval(
+                center_x_pos - tooth_width / 2,
+                center_y_pos - tooth_height / 2,
+                center_x_pos + tooth_width / 2,
+                center_y_pos + tooth_height / 2,
+                outline="#F6EFE3",
+                width=1,
                 fill="",
                 tags=(f"tooth_{index}", "clickable_tooth"),
             )
-            bottom_tooth = self.canvas.create_polygon(
-                x1,
-                bottom_y,
-                x2,
-                bottom_y,
-                x2 - 5,
-                bottom_y - tooth_height,
-                x1 + 5,
-                bottom_y - tooth_height,
+            bottom_tooth = self.canvas.create_oval(
+                center_x_pos - tooth_width / 2,
+                center_y_pos - tooth_height / 2,
+                center_x_pos + tooth_width / 2,
+                center_y_pos + tooth_height / 2,
                 outline="",
                 fill="",
                 tags=(f"tooth_{index}", "clickable_tooth"),
@@ -203,7 +206,12 @@ class CrocodileDentistGame:
 
         fill = TOOTH_GLOW if entering else ""
         for shape_id in self.tooth_shapes[index]:
-            self.canvas.itemconfigure(shape_id, fill=fill, stipple="gray25" if entering else "")
+            self.canvas.itemconfigure(
+                shape_id,
+                fill=fill,
+                stipple="gray25" if entering else "",
+                outline="#F6EFE3" if entering else "",
+            )
 
     def press_tooth(self, index: int) -> None:
         if self.game_over or index in self.pressed_teeth:
@@ -211,9 +219,10 @@ class CrocodileDentistGame:
 
         self.pressed_teeth.add(index)
         top_tooth, bottom_tooth = self.tooth_shapes[index]
-        self.canvas.itemconfigure(top_tooth, fill=TOOTH_PRESSED, stipple="gray50")
-        self.canvas.itemconfigure(bottom_tooth, fill=TOOTH_PRESSED, stipple="gray50")
-        self.canvas.move(bottom_tooth, 0, 10)
+        self.canvas.itemconfigure(top_tooth, fill=TOOTH_PRESSED, stipple="gray50", outline="")
+        self.canvas.itemconfigure(bottom_tooth, fill=TOOTH_PRESSED, stipple="gray50", outline="")
+        self.canvas.move(top_tooth, 0, 2)
+        self.canvas.move(bottom_tooth, 0, 2)
 
         if index == self.losing_tooth:
             self.end_game(index)
@@ -234,8 +243,8 @@ class CrocodileDentistGame:
         self.score_var.set(f"Final safe presses: {self.safe_presses}")
 
         top_tooth, bottom_tooth = self.tooth_shapes[losing_index]
-        self.canvas.itemconfigure(top_tooth, fill=DANGER_COLOR, stipple="gray50")
-        self.canvas.itemconfigure(bottom_tooth, fill=DANGER_COLOR, stipple="gray50")
+        self.canvas.itemconfigure(top_tooth, fill=DANGER_COLOR, stipple="gray50", outline="")
+        self.canvas.itemconfigure(bottom_tooth, fill=DANGER_COLOR, stipple="gray50", outline="")
 
         self._close_jaw_animation(step=0)
 
