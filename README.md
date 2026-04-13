@@ -3,11 +3,12 @@
 A simple desktop Crocodile Dentist game built with `Python` and `tkinter`, using `Crocodile-Dentist.png` as the crocodile model.
 We also now have a `.html` version for those who have a device that doesn't support Python or tkinter. 
 
-## Run it
+## Running it (Windows PowerShell)
 
 ```powershell
 python crocodile_dentist.py
 ```
+#Running  it (for other devices that doesn't support Python/tkinter/PowerShell)
 ```other devices
 double-click "crocodile_dentist.html"
 ```
