@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crocodile Dentist</title>
+<style>
+    body {
+        background: #9ED9A3;
+        font-family: "Segoe UI", sans-serif;
+        text-align: center;
+        color: #16301B;
+    }
+
+    h1 {
+        font-family: "Comic Sans MS";
+    }
+
+    #game {
+        margin: 20px auto;
+        width: 500px;
+        padding: 20px;
+        background: #CDEED1;
+        border-radius: 10px;
+    }
+
+    .teeth {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .tooth {
+        width: 70px;
+        height: 90px;
+        background: #FFF0D2;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .tooth:hover {
+        background: #ffe4a8;
+    }
+
+    .pressed {
+        background: #B9B1A6;
+        transform: translateY(5px);
+    }
+
+    .danger {
+        background: #D94B4B !important;
+    }
+
+    button {
+        margin-top: 15px;
+        padding: 10px 20px;
+        font-weight: bold;
+        background: #27723E;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<h1>Crocodile Dentist</h1>
+<p id="status">Press a tooth. One random tooth will snap the jaws shut.</p>
+<p id="score">Safe presses: 0</p>
+
+<div id="game">
+    <div class="teeth" id="teeth"></div>
+</div>
+
+<button onclick="resetGame()">New Game</button>
+
+<script>
+const totalTeeth = 10;
+let losingTooth;
+let pressed = new Set();
+let safePresses = 0;
+let gameOver = false;
+
+const teethContainer = document.getElementById("teeth");
+
+function createTeeth() {
+    teethContainer.innerHTML = "";
+    for (let i = 0; i < totalTeeth; i++) {
+        const tooth = document.createElement("div");
+        tooth.classList.add("tooth");
+        tooth.dataset.index = i;
+
+        tooth.addEventListener("click", () => pressTooth(i, tooth));
+
+        teethContainer.appendChild(tooth);
+    }
+}
+
+function resetGame() {
+    pressed.clear();
+    safePresses = 0;
+    gameOver = false;
+    losingTooth = Math.floor(Math.random() * totalTeeth);
+
+    document.getElementById("status").textContent =
+        "Press a tooth. One random tooth will snap the jaws shut.";
+    document.getElementById("score").textContent =
+        "Safe presses: 0";
+
+    createTeeth();
+}
+
+function pressTooth(index, element) {
+    if (gameOver || pressed.has(index)) return;
+
+    pressed.add(index);
+    element.classList.add("pressed");
+
+    if (index === losingTooth) {
+        element.classList.add("danger");
+        endGame(index);
+        return;
+    }
+
+    safePresses++;
+    document.getElementById("score").textContent =
+        "Safe presses: " + safePresses;
+
+    if (pressed.size === totalTeeth - 1) {
+        document.getElementById("status").textContent =
+            "Only one tooth left. This is the dangerous one.";
+    } else {
+        document.getElementById("status").textContent =
+            "Still safe. Try another tooth.";
+    }
+}
+
+function endGame(index) {
+    gameOver = true;
+    document.getElementById("status").textContent =
+        "Snap! Tooth " + (index + 1) + " triggered the bite.";
+    document.getElementById("score").textContent =
+        "Final safe presses: " + safePresses;
+}
+
+// Initialize game
+resetGame();
+</script>
+
+</body>
+</html>
