@@ -8,7 +8,7 @@ We also now have a `.html` version for those who have a device that doesn't supp
 ```powershell
 python crocodile_dentist.py
 ```
-#Running  it (for other devices that doesn't support Python/tkinter/PowerShell)
+## Running  it (for other devices that doesn't support Python/tkinter/PowerShell)
 ``other devices
 double-click "crocodile_dentist.html"
 ``
