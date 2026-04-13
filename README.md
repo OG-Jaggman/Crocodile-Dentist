@@ -9,7 +9,7 @@ We also now have a `.html` version for those who have a device that doesn't supp
 python crocodile_dentist.py
 ```
 ## Running  it (for other devices that doesn't support Python/tkinter/PowerShell)
-Double-click "`crocodile_dentist.html`"
+Double-click "`crocodile_dentist.html`" in your files app (it doesn't matter which one).
 
 ## How to play
 
