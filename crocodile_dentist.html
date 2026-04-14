@@ -1,153 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Crocodile Dentist</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crocodile Dentist Game</title>
+  <style>
     body {
-        background: #9ED9A3;
-        font-family: "Segoe UI", sans-serif;
-        text-align: center;
-        color: #16301B;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #9ED9A3;
+      color: #16301B;
+      text-align: center;
+      margin: 0;
+      padding: 0;
     }
 
     h1 {
-        font-family: "Comic Sans MS";
+      font-family: 'Comic Sans MS', sans-serif;
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 20px;
     }
 
-    #game {
-        margin: 20px auto;
-        width: 500px;
-        padding: 20px;
-        background: #CDEED1;
-        border-radius: 10px;
+    .game-status {
+      font-size: 18px;
+      margin-top: 10px;
     }
 
-    .teeth {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 10px;
-        margin-top: 20px;
+    .score {
+      font-size: 16px;
+      margin-top: 5px;
     }
 
-    .tooth {
-        width: 70px;
-        height: 90px;
-        background: #FFF0D2;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: 0.2s;
+    #canvas {
+      background-color: #CDEED1;
+      border: 5px solid #16301B;
+      cursor: pointer;
+      margin-top: 20px;
     }
 
-    .tooth:hover {
-        background: #ffe4a8;
+    .button {
+      background-color: #27723E;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      margin-top: 20px;
+      cursor: pointer;
     }
 
-    .pressed {
-        background: #B9B1A6;
-        transform: translateY(5px);
+    .button:active {
+      background-color: #3A9B57;
     }
-
-    .danger {
-        background: #D94B4B !important;
-    }
-
-    button {
-        margin-top: 15px;
-        padding: 10px 20px;
-        font-weight: bold;
-        background: #27723E;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-</style>
+  </style>
 </head>
 <body>
 
-<h1>Crocodile Dentist</h1>
-<p id="status">Press a tooth. One random tooth will snap the jaws shut.</p>
-<p id="score">Safe presses: 0</p>
+  <h1>Crocodile Dentist</h1>
+  <div class="game-status" id="game-status">Press a tooth. One random tooth will snap the jaws shut.</div>
+  <div class="score" id="score">Safe presses: 0</div>
+  
+  <canvas id="canvas" width="800" height="500"></canvas>
+  <button class="button" id="new-game-button">New Game</button>
 
-<div id="game">
-    <div class="teeth" id="teeth"></div>
-</div>
+  <script>
+    // Constants
+    const TOTAL_TEETH = 10;
+    const TOOTH_SPECS = [
+      { center: [0.245, 0.540], size: [0.048, 0.090] },
+      { center: [0.814, 0.540], size: [0.048, 0.090] },
+      { center: [0.268, 0.723], size: [0.044, 0.090] },
+      { center: [0.342, 0.758], size: [0.046, 0.094] },
+      { center: [0.422, 0.779], size: [0.050, 0.098] },
+      { center: [0.510, 0.789], size: [0.052, 0.102] },
+      { center: [0.599, 0.786], size: [0.050, 0.098] },
+      { center: [0.681, 0.775], size: [0.046, 0.094] },
+      { center: [0.755, 0.747], size: [0.044, 0.090] },
+      { center: [0.808, 0.709], size: [0.038, 0.082] }
+    ];
+    const DANGER_COLOR = "#D94B4B";
+    const TOOTH_GLOW = "#FFF0D2";
+    const TOOTH_PRESSED = "#B9B1A6";
 
-<button onclick="resetGame()">New Game</button>
+    let canvas, ctx;
+    let toothShapes = [];
+    let pressedTeeth = new Set();
+    let safePresses = 0;
+    let gameOver = false;
+    let losingTooth = 0;
 
-<script>
-const totalTeeth = 10;
-let losingTooth;
-let pressed = new Set();
-let safePresses = 0;
-let gameOver = false;
+    window.onload = () => {
+      canvas = document.getElementById("canvas");
+      ctx = canvas.getContext("2d");
+      document.getElementById("new-game-button").addEventListener("click", resetGame);
+      canvas.addEventListener("click", handleToothPress);
 
-const teethContainer = document.getElementById("teeth");
+      resetGame();
+    };
 
-function createTeeth() {
-    teethContainer.innerHTML = "";
-    for (let i = 0; i < totalTeeth; i++) {
-        const tooth = document.createElement("div");
-        tooth.classList.add("tooth");
-        tooth.dataset.index = i;
-
-        tooth.addEventListener("click", () => pressTooth(i, tooth));
-
-        teethContainer.appendChild(tooth);
+    function resetGame() {
+      safePresses = 0;
+      gameOver = false;
+      pressedTeeth.clear();
+      losingTooth = Math.floor(Math.random() * TOTAL_TEETH);
+      document.getElementById("game-status").textContent = "Press a tooth. One random tooth will snap the jaws shut.";
+      document.getElementById("score").textContent = `Safe presses: ${safePresses}`;
+      drawScene();
     }
-}
 
-function resetGame() {
-    pressed.clear();
-    safePresses = 0;
-    gameOver = false;
-    losingTooth = Math.floor(Math.random() * totalTeeth);
+    function drawScene() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    document.getElementById("status").textContent =
-        "Press a tooth. One random tooth will snap the jaws shut.";
-    document.getElementById("score").textContent =
-        "Safe presses: 0";
+      // Draw teeth
+      toothShapes = [];
+      const crocImage = new Image();
+      crocImage.src = 'Crocodile-Dentist.png';
+      crocImage.onload = () => {
+        const crocX = canvas.width / 2;
+        const crocY = 100;
+        ctx.drawImage(crocImage, crocX - crocImage.width / 2, crocY, crocImage.width, crocImage.height);
 
-    createTeeth();
-}
+        TOOTH_SPECS.forEach((spec, index) => {
+          const toothX = crocX - crocImage.width / 2 + crocImage.width * spec.center[0];
+          const toothY = crocY + crocImage.height * spec.center[1];
+          const toothWidth = crocImage.width * spec.size[0];
+          const toothHeight = crocImage.height * spec.size[1];
 
-function pressTooth(index, element) {
-    if (gameOver || pressed.has(index)) return;
+          // Draw the tooth (a circle)
+          ctx.beginPath();
+          ctx.ellipse(toothX, toothY, toothWidth / 2, toothHeight / 2, 0, 0, 2 * Math.PI);
+          ctx.strokeStyle = "#F6EFE3";
+          ctx.lineWidth = 2;
+          ctx.fillStyle = "transparent";
+          ctx.fill();
+          ctx.stroke();
 
-    pressed.add(index);
-    element.classList.add("pressed");
+          toothShapes.push({ x: toothX, y: toothY, width: toothWidth, height: toothHeight, index });
+        });
+      };
+    }
 
-    if (index === losingTooth) {
-        element.classList.add("danger");
+    function handleToothPress(event) {
+      if (gameOver) return;
+
+      const { offsetX, offsetY } = event;
+
+      // Check if click is within any tooth area
+      toothShapes.forEach(tooth => {
+        const { x, y, width, height, index } = tooth;
+        if (offsetX >= x - width / 2 && offsetX <= x + width / 2 && offsetY >= y - height / 2 && offsetY <= y + height / 2) {
+          pressTooth(index);
+        }
+      });
+    }
+
+    function pressTooth(index) {
+      if (gameOver || pressedTeeth.has(index)) return;
+
+      pressedTeeth.add(index);
+
+      // Update the tooth appearance
+      ctx.beginPath();
+      const tooth = toothShapes[index];
+      ctx.ellipse(tooth.x, tooth.y, tooth.width / 2, tooth.height / 2, 0, 0, 2 * Math.PI);
+      ctx.fillStyle = TOOTH_PRESSED;
+      ctx.fill();
+
+      if (index === losingTooth) {
         endGame(index);
-        return;
+      } else {
+        safePresses++;
+        document.getElementById("score").textContent = `Safe presses: ${safePresses}`;
+        if (pressedTeeth.size === TOTAL_TEETH - 1) {
+          document.getElementById("game-status").textContent = "Only one tooth left. This is the dangerous one.";
+        } else {
+          document.getElementById("game-status").textContent = "Still safe. Try another tooth.";
+        }
+      }
     }
 
-    safePresses++;
-    document.getElementById("score").textContent =
-        "Safe presses: " + safePresses;
+    function endGame(index) {
+      gameOver = true;
+      document.getElementById("game-status").textContent = `Snap! Tooth ${index + 1} triggered the bite.`;
+      document.getElementById("game-status").style.color = DANGER_COLOR;
+      document.getElementById("score").textContent = `Final safe presses: ${safePresses}`;
 
-    if (pressed.size === totalTeeth - 1) {
-        document.getElementById("status").textContent =
-            "Only one tooth left. This is the dangerous one.";
-    } else {
-        document.getElementById("status").textContent =
-            "Still safe. Try another tooth.";
+      // Highlight the losing tooth
+      const losingToothShape = toothShapes[index];
+      ctx.beginPath();
+      ctx.ellipse(losingToothShape.x, losingToothShape.y, losingToothShape.width / 2, losingToothShape.height / 2, 0, 0, 2 * Math.PI);
+      ctx.fillStyle = DANGER_COLOR;
+      ctx.fill();
     }
-}
-
-function endGame(index) {
-    gameOver = true;
-    document.getElementById("status").textContent =
-        "Snap! Tooth " + (index + 1) + " triggered the bite.";
-    document.getElementById("score").textContent =
-        "Final safe presses: " + safePresses;
-}
-
-// Initialize game
-resetGame();
-</script>
+  </script>
 
 </body>
 </html>
