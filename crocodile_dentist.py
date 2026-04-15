@@ -39,16 +39,16 @@ class CrocodileDentistGame:
     # Tooth positions are normalized against the source PNG so they still line up
     # after the displayed image is cropped and optionally subsampled.
     TOOTH_SPECS = [
-        {"center": (0.28, 0.78), "size": (0.048, 0.090)},
-        {"center": (0.34, 0.82), "size": (0.048, 0.090)},
-        {"center": (0.40, 0.85), "size": (0.044, 0.090)},
-        {"center": (0.46, 0.87), "size": (0.046, 0.094)},
-        {"center": (0.52, 0.88), "size": (0.050, 0.098)},
-        {"center": (0.60, 0.88), "size": (0.052, 0.102)},
-        {"center": (0.66, 0.87), "size": (0.050, 0.098)},
-        {"center": (0.72, 0.85), "size": (0.046, 0.094)},
-        {"center": (0.78, 0.82), "size": (0.044, 0.090)},
-        {"center": (0.84, 0.78), "size": (0.038, 0.082)},
+        {"center": (0.30, 0.65), "size": (0.048, 0.090)},
+        {"center": (0.36, 0.68), "size": (0.048, 0.090)},
+        {"center": (0.42, 0.70), "size": (0.044, 0.090)},
+        {"center": (0.48, 0.71), "size": (0.046, 0.094)},
+        {"center": (0.54, 0.70), "size": (0.050, 0.098)},
+        {"center": (0.60, 0.68), "size": (0.052, 0.102)},
+        {"center": (0.66, 0.65), "size": (0.050, 0.098)},
+        {"center": (0.40, 0.60), "size": (0.046, 0.094)},
+        {"center": (0.50, 0.58), "size": (0.044, 0.090)},
+        {"center": (0.60, 0.60), "size": (0.038, 0.082)},
     ]
 
     def _load_game_image(self) -> tk.PhotoImage:
