@@ -1,6 +1,6 @@
 # Crocodile Dentist
 
-A simple desktop Crocodile Dentist game built with `Python` and `tkinter`, using `Crocodile-Dentist.png` as the crocodile model.
+A simple desktop Crocodile Dentist game built with `Python` and `tkinter`, using `Crocodile-Dentist-Teeth.png` as the crocodile model.
 We also now have a `.html` version for those who have a device that doesn't support Python or tkinter. 
 
 ## Running it (Windows PowerShell)

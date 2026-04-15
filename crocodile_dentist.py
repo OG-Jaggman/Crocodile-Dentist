@@ -18,7 +18,7 @@ class CrocodileDentistGame:
         self.root.resizable(False, False)
         self.root.configure(bg=BG_COLOR)
 
-        self.image_path = Path(__file__).with_name("Crocodile-Dentist.png")
+        self.image_path = Path(__file__).with_name("Crocodile-Dentist-Teeth.png")
         self.croc_image = self._load_game_image()
         self.canvas_width = self.croc_image.width() + 80
         self.canvas_height = self.croc_image.height() + 110
