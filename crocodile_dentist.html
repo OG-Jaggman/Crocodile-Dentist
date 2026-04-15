@@ -50,6 +50,7 @@
   <script>
     // Constants
     const TOTAL_TEETH = 10;
+    const TOOTH_HITBOX_SCALE = 0.75;
     const TOOTH_SPECS = [
       { center: [0.30, 0.65], size: [0.048, 0.090] },
       { center: [0.36, 0.68], size: [0.048, 0.090] },
@@ -106,8 +107,8 @@
         TOOTH_SPECS.forEach((spec, index) => {
           const toothX = crocX - crocImage.width / 2 + crocImage.width * spec.center[0];
           const toothY = crocY + crocImage.height * spec.center[1];
-          const toothWidth = crocImage.width * spec.size[0];
-          const toothHeight = crocImage.height * spec.size[1];
+          const toothWidth = crocImage.width * spec.size[0] * TOOTH_HITBOX_SCALE;
+          const toothHeight = crocImage.height * spec.size[1] * TOOTH_HITBOX_SCALE;
 
           toothShapes.push({ x: toothX, y: toothY, width: toothWidth, height: toothHeight, index });
         });

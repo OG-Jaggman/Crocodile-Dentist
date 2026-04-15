@@ -50,6 +50,7 @@ class CrocodileDentistGame:
         {"center": (0.50, 0.58), "size": (0.044, 0.090)},
         {"center": (0.60, 0.60), "size": (0.038, 0.082)},
     ]
+    TOOTH_HITBOX_SCALE = 0.75
 
     def _load_game_image(self) -> tk.PhotoImage:
         source_image = tk.PhotoImage(file=str(self.image_path))
@@ -136,8 +137,8 @@ class CrocodileDentistGame:
         for index, spec in enumerate(self.TOOTH_SPECS):
             center_x_pos = image_left + (self.croc_image.width() * spec["center"][0])
             center_y_pos = image_top + (self.croc_image.height() * spec["center"][1])
-            tooth_width = max(14, int(self.croc_image.width() * spec["size"][0]))
-            tooth_height = max(20, int(self.croc_image.height() * spec["size"][1]))
+            tooth_width = max(10, int(self.croc_image.width() * spec["size"][0] * self.TOOTH_HITBOX_SCALE))
+            tooth_height = max(14, int(self.croc_image.height() * spec["size"][1] * self.TOOTH_HITBOX_SCALE))
 
             top_tooth = self.canvas.create_oval(
                 center_x_pos - tooth_width / 2,
