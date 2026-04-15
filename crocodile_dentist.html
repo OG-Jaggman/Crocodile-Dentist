@@ -109,15 +109,6 @@
           const toothWidth = crocImage.width * spec.size[0];
           const toothHeight = crocImage.height * spec.size[1];
 
-          // Draw the tooth (a circle)
-          ctx.beginPath();
-          ctx.ellipse(toothX, toothY, toothWidth / 2, toothHeight / 2, 0, 0, 2 * Math.PI);
-          ctx.strokeStyle = "#F6EFE3";
-          ctx.lineWidth = 2;
-          ctx.fillStyle = "transparent";
-          ctx.fill();
-          ctx.stroke();
-
           toothShapes.push({ x: toothX, y: toothY, width: toothWidth, height: toothHeight, index });
         });
       };

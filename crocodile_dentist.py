@@ -140,9 +140,9 @@ class CrocodileDentistGame:
         )
 
         self.canvas.create_image(center_x, image_y + 18, image=self.croc_image, anchor="n")
-        self._draw_teeth_hit_areas(center_x, image_y + 18)
+        self._init_tooth_positions(center_x, image_y + 18)
 
-    def _draw_teeth_hit_areas(self, center_x: int, image_y: int) -> None:
+    def _init_tooth_positions(self, center_x: int, image_y: int) -> None:
         image_left = center_x - (self.croc_image.width() // 2)
         image_top = image_y
 
@@ -157,8 +157,8 @@ class CrocodileDentistGame:
                 center_y_pos - tooth_height / 2,
                 center_x_pos + tooth_width / 2,
                 center_y_pos + tooth_height / 2,
-                outline="#F6EFE3",
-                width=1,
+                outline="",
+                width=0,
                 fill="",
                 tags=(f"tooth_{index}", "clickable_tooth"),
             )
