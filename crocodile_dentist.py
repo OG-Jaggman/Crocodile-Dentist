@@ -122,22 +122,7 @@ class CrocodileDentistGame:
         )
         self.canvas.pack(padx=14, pady=(4, 10))
 
-        controls = tk.Frame(self.root, bg=BG_COLOR)
-        controls.pack(pady=(0, 16))
-
-        self.reset_button = tk.Button(
-            controls,
-            text="New Game",
-            font=("Segoe UI", 11, "bold"),
-            bg="#27723E",
-            fg="white",
-            activebackground="#3A9B57",
-            activeforeground="white",
-            padx=18,
-            pady=8,
-            command=self.reset_game,
-        )
-        self.reset_button.pack()
+        # Removed New Game button
 
     def _draw_scene(self) -> None:
         self.canvas.delete("all")
@@ -303,6 +288,9 @@ class CrocodileDentistGame:
 
         if step < len(offsets) - 1:
             self.root.after(55, lambda: self._close_jaw_animation(step + 1))
+        else:
+            # Reset game after animation
+            self.root.after(1000, self.reset_game)
 
 
 def main() -> None:

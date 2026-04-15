@@ -37,20 +37,6 @@
       cursor: pointer;
       margin-top: 20px;
     }
-
-    .button {
-      background-color: #27723E;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 14px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-
-    .button:active {
-      background-color: #3A9B57;
-    }
   </style>
 </head>
 <body>
@@ -60,7 +46,6 @@
   <div class="score" id="score">Safe presses: 0</div>
   
   <canvas id="canvas" width="800" height="500"></canvas>
-  <button class="button" id="new-game-button">New Game</button>
 
   <script>
     // Constants
@@ -91,7 +76,6 @@
     window.onload = () => {
       canvas = document.getElementById("canvas");
       ctx = canvas.getContext("2d");
-      document.getElementById("new-game-button").addEventListener("click", resetGame);
       canvas.addEventListener("click", handleToothPress);
 
       resetGame();
@@ -190,6 +174,9 @@
       ctx.ellipse(losingToothShape.x, losingToothShape.y, losingToothShape.width / 2, losingToothShape.height / 2, 0, 0, 2 * Math.PI);
       ctx.fillStyle = DANGER_COLOR;
       ctx.fill();
+
+      // Reset game after 3 seconds
+      setTimeout(resetGame, 3000);
     }
   </script>
 
