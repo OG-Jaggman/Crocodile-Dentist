@@ -12,8 +12,6 @@ DANGER_COLOR = "#D94B4B"
 
 
 class CrocodileDentistGame:
-    IMAGE_CROP = (86, 74, 425, 359)
-
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("Crocodile Dentist")
@@ -55,30 +53,19 @@ class CrocodileDentistGame:
 
     def _load_game_image(self) -> tk.PhotoImage:
         source_image = tk.PhotoImage(file=str(self.image_path))
-        crop_left, crop_top, crop_right, crop_bottom = self.IMAGE_CROP
-
-        image = tk.PhotoImage()
-        image.tk.call(
-            str(image),
-            "copy",
-            str(source_image),
-            "-from",
-            crop_left,
-            crop_top,
-            crop_right,
-            crop_bottom,
-        )
 
         max_width = 900
         max_height = 520
         scale = max(
             1,
-            (image.width() + max_width - 1) // max_width,
-            (image.height() + max_height - 1) // max_height,
+            (source_image.width() + max_width - 1) // max_width,
+            (source_image.height() + max_height - 1) // max_height,
         )
 
         if scale > 1:
-            image = image.subsample(scale, scale)
+            image = source_image.subsample(scale, scale)
+        else:
+            image = source_image
 
         return image
 
